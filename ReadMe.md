@@ -3,6 +3,8 @@
 In this program, I demonstrate how one might convert back and forth between
 the CheSS segmented CSR matrix format to NTPoly.
 
+(THIS PROJECT STILL ISN'T DONE!)
+
 ## How To Compile
 Go into the Build folder and type:
 

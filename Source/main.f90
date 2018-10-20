@@ -3,7 +3,7 @@
 !! csr matrix into the NTPoly format, and back again.
 PROGRAM ConversionExample
   USE ConversionModule, ONLY : NTPolyToCSR, CSRToNTPoly
-  USE FakeChessModule, ONLY : CSRMat_t
+  USE FakeChessModule, ONLY : SegMat_t
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, CopyMatrix, PrintMatrix
   USE TripletListModule, ONLY : TripletList_r
@@ -12,9 +12,9 @@ PROGRAM ConversionExample
   !! Calculation Parameters
   INTEGER, PARAMETER :: MatrixSize = 4
   !! The hamiltonian to convert, which is stored on every process.
-  TYPE(CSRMat_t) :: Hamiltonian
+  TYPE(SegMat_t) :: Hamiltonian
   !! The density matrix, which is divided by columns.
-  TYPE(CSRMat_t) :: Density
+  TYPE(SegMat_t) :: Density
   !! The NTPoly Hamiltonian
   TYPE(Matrix_ps) :: NTHamiltonian
   !! The NTPoly Density Matrix
@@ -27,7 +27,7 @@ PROGRAM ConversionExample
   CALL InitParallel
 
   !! The Hamiltonian is a random matrix to start
-  Hamiltonian = CSRMat_t(MatrixSize, MatrixSize)
+  Hamiltonian = SegMat_t(MatrixSize, MatrixSize)
   CALL Hamiltonian%FillRandom()
   IF (my_rank .EQ. 0) THEN
      CALL Hamiltonian%print
@@ -41,7 +41,7 @@ PROGRAM ConversionExample
   IF (my_rank .EQ. num_procs) THEN
      end_col = MatrixSize
   END IF
-  Density = CSRMat_t(MatrixSize, cols_per_proc)
+  Density = SegMat_t(MatrixSize, cols_per_proc)
 
   !! Now we will demonstrate the conversions. First, convert to NTPoly.
   CALL CSRToNTPoly(Hamiltonian, NTHamiltonian)

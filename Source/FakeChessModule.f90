@@ -3,7 +3,7 @@
 MODULE FakeChessModule
   IMPLICIT NONE
   !> An example implementation of the segmented csr matrix.
-  TYPE, PUBLIC :: CSRMat_t
+  TYPE, PUBLIC :: SegMat_t
      !> The number of columns in a matrix
      INTEGER :: num_columns
      !> The number of rows in a matrix
@@ -20,16 +20,16 @@ MODULE FakeChessModule
      PROCEDURE :: FillRandom
      PROCEDURE :: PRINT => PrintMat
      FINAL :: Final_CSRMat
-  END TYPE CSRMat_t
+  END TYPE SegMat_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE CSRMat_t
+  INTERFACE SegMat_t
      MODULE PROCEDURE CSRMat_init
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Initializes a CSR matrix with a random matrix. You should ignore this
   !! code as it's just an example.
   FUNCTION CSRMat_init(rows, columns) RESULT(this)
-    TYPE(CSRMat_t) :: this
+    TYPE(SegMat_t) :: this
     INTEGER, INTENT(IN) :: rows
     INTEGER, INTENT(IN) :: columns
 
@@ -42,7 +42,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! (As a sanity check)
   SUBROUTINE PrintMat(this)
     !> The matrix to print out.
-    CLASS(CSRMat_t), INTENT(IN) :: this
+    CLASS(SegMat_t), INTENT(IN) :: this
     !! Local Variables
     REAL(8), DIMENSION(:,:), ALLOCATABLE :: densemat
     INTEGER :: OO, SS
@@ -61,7 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill with random entries.
   SUBROUTINE FillRandom(this)
     !> The matrix to fill.
-    CLASS(CSRMat_t), INTENT(INOUT) :: this
+    CLASS(SegMat_t), INTENT(INOUT) :: this
     !! Local Variables
     REAL(8), DIMENSION(:,:), ALLOCATABLE :: densemat
     INTEGER :: II
@@ -85,7 +85,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructor for the CSR Matrix
   SUBROUTINE Final_CSRMat(this)
-    TYPE(CSRMat_t), INTENT(INOUT) :: this
+    TYPE(SegMat_t), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%outer_index)) DEALLOCATE(this%outer_index)
     IF (ALLOCATED(this%segment_index)) DEALLOCATE(this%segment_index)
@@ -95,7 +95,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE CsrToDense(csrmat, dmat)
     !> The matrix to print out.
-    TYPE(CSRMat_t), INTENT(IN) :: csrmat
+    TYPE(SegMat_t), INTENT(IN) :: csrmat
     REAL(8), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: dmat
     !! Local variables
     INTEGER :: OO, SS, VV
@@ -125,14 +125,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Dense matrix to convert
     REAL(8), DIMENSION(:,:), INTENT(IN) :: dmat
     !> CSR matri to convert to
-    TYPE(CSRMat_t) :: csrmat
+    TYPE(SegMat_t) :: csrmat
     !! Local variables
     INTEGER :: II, JJ
     INTEGER, DIMENSION(:), ALLOCATABLE :: segment_end
     INTEGER :: nnz
     INTEGER :: eptr, sptr
 
-    csrmat = CSRMat_t(SIZE(dmat,DIM=1), SIZE(dmat,DIM=2))
+    csrmat = SegMat_t(SIZE(dmat,DIM=1), SIZE(dmat,DIM=2))
 
     !! Compute outer index.
     ALLOCATE(csrmat%outer_index(csrmat%num_columns+1))
