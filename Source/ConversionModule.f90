@@ -5,9 +5,9 @@ MODULE ConversionModule
   USE FakeChessModule, ONLY : SegMat_t
   USE PSMatrixModule, ONLY : Matrix_ps, GetMatrixTripletList, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, GetMatrixBlock
-  USE SMatrixModule, ONLY : Matrix_lsr
+  USE SMatrixModule, ONLY : Matrix_lsr, ConstructMatrixFromTripletList
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
-       & AppendToTripletList, DestructTripletList
+       & AppendToTripletList, DestructTripletList, SortTripletList
   USE TripletModule, ONLY : Triplet_r
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -76,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The last column held by a given process
     INTEGER, INTENT(IN) :: end_col
     !! Local Data
-    TYPE(Matrix_lsr) :: local_mat
+    TYPE(Matrix_lsr) :: csr_mat
     TYPE(TripletList_r) :: triplet_list, sorted_triplet_list
     TYPE(Triplet_r) :: trip
     INTEGER :: II
@@ -93,8 +93,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! We can now convert the triplet list to csr matrix.
+    CALL SortTripletList(triplet_list, segmat%num_columns, &
+         & segmat%num_rows, sorted_triplet_list)
+    CALL ConstructMatrixFromTripletList(csr_mat, triplet_list, &
+         & segmat%num_rows, segmat%num_columns)
 
-    !! Now convert the triplet list to a csr matrix.
+    !! Now convert the csr_mat to a segmented matrix
   END SUBROUTINE NTPolyToCSR
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ConversionModule

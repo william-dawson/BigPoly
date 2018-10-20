@@ -11,6 +11,7 @@ find_library(NTPoly_LIBRARIES NTPoly)
 find_path(NTPoly_INCLUDE_PATH "psmatrixmodule.mod")
 find_library(Futile_LIBRARIES futile-1)
 find_path(Futile_INCLUDE_PATH "dictionaries.mod")
+find_library(Yaml_LIBRARIES yaml)
 
 ################################################################################
 ## Packages
