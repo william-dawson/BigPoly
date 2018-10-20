@@ -11,11 +11,11 @@ MODULE ConversionModule
   USE TripletModule, ONLY : Triplet_r
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: CSRToNTPoly
-  PUBLIC :: NTPolyToCSR
+  PUBLIC :: SegToNTPoly
+  PUBLIC :: NTPolyToSeg
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a SegMat_t type to NTPoly type
-  SUBROUTINE CSRToNTPoly(segmat, ntpolymat)
+  SUBROUTINE SegToNTPoly(segmat, ntpolymat)
     !> The matrix to convert.
     TYPE(SegMat_t), INTENT(IN) :: segmat
     !> The output matrix.
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! We will build the NTPoly matrix from the triplet list.
     CALL ConstructTripletList(triplet_list)
 
-    !! Loop over columns of the CSR matrix that match the NTPoly columns
+    !! Loop over columns of the Segment matrix that match the NTPoly columns
     iptr = 1
     DO II = ntpolymat%start_column, ntpolymat%end_column-1
        trip%index_column = II
@@ -54,19 +54,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Preduplicated is set to true because we had each process slice
-    !! extract the same information from the CSR mat.
+    !! extract the same information from the Segment Matrix.
     CALL FillMatrixFromTripletList(ntpolymat, triplet_list, &
          & preduplicated_in=.TRUE.)
 
     !! Cleanup
     CALL DestructTripletList(triplet_list)
 
-  END SUBROUTINE CSRToNTPoly
+  END SUBROUTINE SegToNTPoly
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert an NTPoly matrix to segmat_t.
   !! Note that here I am assuming that the segmat is distributed along columns
   !! so you pass in the starting and ending column column of each process.
-  SUBROUTINE NTPolyToCSR(ntpolymat, segmat, start_col, end_col)
+  SUBROUTINE NTPolyToSeg(ntpolymat, segmat, start_col, end_col)
     !> The matrix to convert.
     TYPE(Matrix_ps), INTENT(IN) :: ntpolymat
     !> The converted matrix, distributed along columns.
@@ -99,6 +99,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & segmat%num_rows, segmat%num_columns)
 
     !! Now convert the csr_mat to a segmented matrix
-  END SUBROUTINE NTPolyToCSR
+
+  END SUBROUTINE NTPolyToSeg
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ConversionModule

@@ -2,7 +2,7 @@
 !> In this example, I will show how to convert a CheSS like segmented
 !! csr matrix into the NTPoly format, and back again.
 PROGRAM ConversionExample
-  USE ConversionModule, ONLY : NTPolyToCSR, CSRToNTPoly
+  USE ConversionModule, ONLY : NTPolyToSeg, SegToNTPoly
   USE dictionaries, ONLY : dictionary, dict_free
   USE Futile
   USE FakeChessModule, ONLY : SegMat_t
@@ -63,14 +63,14 @@ PROGRAM ConversionExample
   Density = SegMat_t(MatrixSize, cols_per_proc)
 
   !! Now we will demonstrate the conversions. First, convert to NTPoly.
-  CALL CSRToNTPoly(Hamiltonian, NTHamiltonian)
+  CALL SegToNTPoly(Hamiltonian, NTHamiltonian)
   CALL PrintMatrix(NTHamiltonian)
 
   !! Replace this Copy with whatever solver operation you wish to perform.
   CALL CopyMatrix(NTHamiltonian, NTDensity)
 
   !! Now convert back and print.
-  CALL NTPolyToCSR(NTDensity, Density, start_col, end_col)
+  CALL NTPolyToSeg(NTDensity, Density, start_col, end_col)
 
   !! Cleanup
   ! CALL dict_free(options)
