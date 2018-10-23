@@ -1,5 +1,5 @@
 ################################################################################
-set(sources main.f90 ConversionModule.f90 FakeChessModule.f90)
+set(sources main.f90 ConversionModule.f90)
 
 ################################################################################
 ## Fortran Version

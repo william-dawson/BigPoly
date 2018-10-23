@@ -2,24 +2,23 @@
 !> In this example, I will show how to convert a CheSS like segmented
 !! csr matrix into the NTPoly format, and back again.
 PROGRAM ConversionExample
-  USE ConversionModule, ONLY : NTPolyToSeg, SegToNTPoly
+  !! Local Modules
+  USE ConversionModule, ONLY : ChessToNTPoly
+  USE MPI
   !! NTPoly Modules
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
-  USE PSMatrixModule, ONLY : Matrix_ps, CopyMatrix, PrintMatrix
-  USE TripletListModule, ONLY : TripletList_r
+  USE PSMatrixModule, ONLY : Matrix_ps, CopyMatrix
   !! BigDFT Modules
   USE dictionaries, ONLY : dictionary, dict_free
   USE futile
   USE sparsematrix_highlevel, ONLY: sparse_matrix_metadata_init_from_file, &
-       & sparse_matrix_and_matrices_init_from_file_bigdft, &
-       & ccs_data_from_sparse_matrix
+       & sparse_matrix_and_matrices_init_from_file_bigdft
   USE sparsematrix_init, ONLY : init_matrix_taskgroups_wrapper
   USE sparsematrix_memory, ONLY : deallocate_sparse_matrix_metadata, &
        & deallocate_matrices, deallocate_sparse_matrix
   USE sparsematrix_types, ONLY : sparse_matrix_metadata, matrices, sparse_matrix
   USE yaml_parse, ONLY : yaml_cl_parse, yaml_cl_parse_null, &
        & yaml_cl_parse_cmd_line, yaml_cl_parse_free, yaml_cl_parse_option
-  USE MPI
   IMPLICIT NONE
   !! Calculation Parameters
   CHARACTER(LEN=1024) :: metadata_file
@@ -31,14 +30,14 @@ PROGRAM ConversionExample
   TYPE(sparse_matrix_metadata) :: metadata
   TYPE(sparse_matrix), DIMENSION(1) :: smat
   TYPE(matrices) :: mat
-  !! CCS Matrix
-  INTEGER, POINTER, DIMENSION(:) :: row_ind, col_ptr
+  !! NTPoly Matrices
+  TYPE(Matrix_ps) :: nt_fock, nt_density
 
   !! Init
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
+  CALL InitParallel
   CALL f_lib_initialize()
   CALL InitParams
-  CALL InitParallel
 
   !! Setup the CheSS matrices.
   CALL sparse_matrix_metadata_init_from_file(TRIM(metadata_file), metadata)
@@ -48,46 +47,16 @@ PROGRAM ConversionExample
   CALL init_matrix_taskgroups_wrapper(my_rank, num_procs, MPI_COMM_WORLD, &
        & .TRUE., 1, smat)
 
-  !! Convert to CCS Matrix
-  ! col_ptr = f_malloc(smat(1)%nfvctr,id='col_ptr')
-  ! row_ind = f_malloc(smat(1)%nvctr,id='row_ind')
-  ALLOCATE(col_ptr(smat(1)%nfvctr))
-  ALLOCATE(row_ind(smat(1)%nvctr))
-  CALL ccs_data_from_sparse_matrix(smat(1), row_ind, col_ptr)
+  !! Convert CheSS To NTPoly
+  CALL ChessToNTPoly(smat(1), mat, nt_fock)
 
-  WRITE(*,*) mat%matrix_compr
-
-  !! The Hamiltonian is a random matrix to start
-  ! MatrixSize = options//'matrix_size'
-  ! Hamiltonian = SegMat_t(MatrixSize, MatrixSize)
-  ! CALL Hamiltonian%FillRandom()
-  ! IF (my_rank .EQ. 0) THEN
-  !    CALL Hamiltonian%print
-  ! END IF
-  !
-  ! !! The density matrix is empty to start, but here we will construct
-  ! !! an empty matrix with a suitable partitioning.
-  ! cols_per_proc = MatrixSize/num_procs
-  ! start_col = cols_per_proc*(my_rank-1) + 1
-  ! end_col = start_col + cols_per_proc - 1
-  ! IF (my_rank .EQ. num_procs) THEN
-  !    end_col = MatrixSize
-  ! END IF
-  ! Density = SegMat_t(MatrixSize, cols_per_proc)
-  !
-  ! !! Now we will demonstrate the conversions. First, convert to NTPoly.
-  ! CALL SegToNTPoly(Hamiltonian, NTHamiltonian)
-  ! CALL PrintMatrix(NTHamiltonian)
-  !
-  ! !! Replace this Copy with whatever solver operation you wish to perform.
-  ! CALL CopyMatrix(NTHamiltonian, NTDensity)
+  !! Replace this Copy with whatever solver operation you wish to perform.
+  CALL CopyMatrix(nt_fock, nt_density)
   !
   ! !! Now convert back and print.
   ! CALL NTPolyToSeg(NTDensity, Density, start_col, end_col)
 
   !! Cleanup
-  ! CALL f_free_ptr(row_ind)
-  ! CALL f_free_ptr(col_ptr)
   CALL deallocate_sparse_matrix(smat(1))
   CALL deallocate_matrices(mat)
   CALL deallocate_sparse_matrix_metadata(metadata)
@@ -118,11 +87,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_format = options//"matrix_format"
 
     !! Punch out
-    CALL yaml_mapping_open('Input parameters')
-    CALL yaml_map('Matrix file',TRIM(matrix_file))
-    CALL yaml_map('Metadata file',TRIM(metadata_file))
-    CALL yaml_map('Matrix format',TRIM(matrix_format))
-    CALL yaml_mapping_close()
+    IF (my_rank .EQ. 0) THEN
+       CALL yaml_mapping_open('Input parameters')
+       CALL yaml_map('Matrix file',TRIM(matrix_file))
+       CALL yaml_map('Metadata file',TRIM(metadata_file))
+       CALL yaml_map('Matrix format',TRIM(matrix_format))
+       CALL yaml_mapping_close()
+    END IF
 
     !! Cleanup
     CALL dict_free(options)
