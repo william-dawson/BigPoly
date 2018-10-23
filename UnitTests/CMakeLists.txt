@@ -9,7 +9,8 @@ else()
 endif()
 
 ################################################################################
-set(testargs "--matrix
+set(testargs "
+  --fock_file
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/hamiltonian_sparse.txt
   --metadata
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/sparsematrix_metadata.dat")
