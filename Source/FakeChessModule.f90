@@ -19,16 +19,16 @@ MODULE FakeChessModule
    CONTAINS
      PROCEDURE :: FillRandom
      PROCEDURE :: PRINT => PrintMat
-     FINAL :: Final_CSRMat
+     FINAL :: Final_segmat
   END TYPE SegMat_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SegMat_t
-     MODULE PROCEDURE CSRMat_init
+     MODULE PROCEDURE segmat_init
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Initializes a CSR matrix with a random matrix. You should ignore this
   !! code as it's just an example.
-  FUNCTION CSRMat_init(rows, columns) RESULT(this)
+  FUNCTION segmat_init(rows, columns) RESULT(this)
     TYPE(SegMat_t) :: this
     INTEGER, INTENT(IN) :: rows
     INTEGER, INTENT(IN) :: columns
@@ -36,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Process Args
     this%num_rows = rows
     this%num_columns = columns
-  END FUNCTION CSRMat_init
+  END FUNCTION segmat_init
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a matrix to the console.
   !! (As a sanity check)
@@ -67,7 +67,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
     REAL(8) :: rand_temp
 
-    CALL Final_CSRMat(this)
+    CALL Final_segmat(this)
 
     !! Dense random matrix.
     CALL ComputeRandomMask(densemat, this%num_rows, this%num_columns)
@@ -84,18 +84,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillRandom
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructor for the CSR Matrix
-  SUBROUTINE Final_CSRMat(this)
+  SUBROUTINE Final_segmat(this)
     TYPE(SegMat_t), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%outer_index)) DEALLOCATE(this%outer_index)
     IF (ALLOCATED(this%segment_index)) DEALLOCATE(this%segment_index)
     IF (ALLOCATED(this%segment_len)) DEALLOCATE(this%segment_len)
     IF (ALLOCATED(this%values)) DEALLOCATE(this%values)
-  END SUBROUTINE Final_CSRMat
+  END SUBROUTINE Final_segmat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE CsrToDense(csrmat, dmat)
+  SUBROUTINE CsrToDense(segmat, dmat)
     !> The matrix to print out.
-    TYPE(SegMat_t), INTENT(IN) :: csrmat
+    TYPE(SegMat_t), INTENT(IN) :: segmat
     REAL(8), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: dmat
     !! Local variables
     INTEGER :: OO, SS, VV
@@ -103,17 +103,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: iptr
 
     !! We'll build a dense matrix to print
-    ALLOCATE(dmat(csrmat%num_rows, csrmat%num_columns))
+    ALLOCATE(dmat(segmat%num_rows, segmat%num_columns))
     dmat = 0
 
     !! Loop over outer index
     iptr = 1
-    DO OO = 1, csrmat%num_columns
+    DO OO = 1, segmat%num_columns
        !! Loop over segments
-       DO SS = csrmat%outer_index(OO), csrmat%outer_index(OO+1)-1
-          segstart = csrmat%segment_index(SS)
-          DO VV = 1, csrmat%segment_len(SS)
-             dmat(segstart+VV-1,OO) = csrmat%values(iptr)
+       DO SS = segmat%outer_index(OO), segmat%outer_index(OO+1)-1
+          segstart = segmat%segment_index(SS)
+          DO VV = 1, segmat%segment_len(SS)
+             dmat(segstart+VV-1,OO) = segmat%values(iptr)
              iptr = iptr + 1
           END DO
        END DO
@@ -121,64 +121,64 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CsrToDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a dense matrix to a csr matrix
-  SUBROUTINE DenseToCsr(dmat, csrmat)
+  SUBROUTINE DenseToCsr(dmat, segmat)
     !> Dense matrix to convert
     REAL(8), DIMENSION(:,:), INTENT(IN) :: dmat
     !> CSR matri to convert to
-    TYPE(SegMat_t) :: csrmat
+    TYPE(SegMat_t) :: segmat
     !! Local variables
     INTEGER :: II, JJ
     INTEGER, DIMENSION(:), ALLOCATABLE :: segment_end
     INTEGER :: nnz
     INTEGER :: eptr, sptr
 
-    csrmat = SegMat_t(SIZE(dmat,DIM=1), SIZE(dmat,DIM=2))
+    segmat = SegMat_t(SIZE(dmat,DIM=1), SIZE(dmat,DIM=2))
 
     !! Compute outer index.
-    ALLOCATE(csrmat%outer_index(csrmat%num_columns+1))
-    csrmat%outer_index = 0
-    csrmat%outer_index(1) = 1
-    DO JJ = 2, csrmat%num_columns+1
-       csrmat%outer_index(JJ) = csrmat%outer_index(JJ-1)
-       DO II = 1, csrmat%num_rows
+    ALLOCATE(segmat%outer_index(segmat%num_columns+1))
+    segmat%outer_index = 0
+    segmat%outer_index(1) = 1
+    DO JJ = 2, segmat%num_columns+1
+       segmat%outer_index(JJ) = segmat%outer_index(JJ-1)
+       DO II = 1, segmat%num_rows
           IF (dmat(II,JJ-1) .EQ. 1) THEN
              IF (II .EQ. 1) THEN
-                csrmat%outer_index(JJ) = csrmat%outer_index(JJ) + 1
+                segmat%outer_index(JJ) = segmat%outer_index(JJ) + 1
              ELSE IF (dmat(II-1,JJ-1) .EQ. 0) THEN
-                csrmat%outer_index(JJ) = csrmat%outer_index(JJ) + 1
+                segmat%outer_index(JJ) = segmat%outer_index(JJ) + 1
              END IF
           END IF
        END DO
     END DO
-    nnz = csrmat%outer_index(csrmat%num_columns+1) - 1
+    nnz = segmat%outer_index(segmat%num_columns+1) - 1
 
     !! Count the segment lengths and indices
-    ALLOCATE(csrmat%segment_len(nnz))
-    csrmat%segment_len = 0
-    ALLOCATE(csrmat%segment_index(nnz))
-    csrmat%segment_index = 0
+    ALLOCATE(segmat%segment_len(nnz))
+    segmat%segment_len = 0
+    ALLOCATE(segmat%segment_index(nnz))
+    segmat%segment_index = 0
     ALLOCATE(segment_end(nnz))
     sptr = 1
     eptr = 1
-    DO JJ = 1, csrmat%num_columns
-       DO II = 1, csrmat%num_rows
+    DO JJ = 1, segmat%num_columns
+       DO II = 1, segmat%num_rows
           IF (dmat(II,JJ) .EQ. 1) THEN
-             IF (csrmat%num_rows .EQ. 1) THEN
-                csrmat%segment_index(sptr) = 1
+             IF (segmat%num_rows .EQ. 1) THEN
+                segmat%segment_index(sptr) = 1
                 segment_end(eptr) = 1
                 sptr = sptr + 1
                 eptr = eptr + 1
              ELSE
                 !! Check Segment Start
                 IF (II .EQ. 1) THEN
-                   csrmat%segment_index(sptr) = II
+                   segmat%segment_index(sptr) = II
                    sptr = sptr + 1
                 ELSE IF (dmat(II-1,JJ) .EQ. 0) THEN
-                   csrmat%segment_index(sptr) = II
+                   segmat%segment_index(sptr) = II
                    sptr = sptr + 1
                 END IF
                 !! Check Segment End
-                IF (II .EQ. csrmat%num_rows) THEN
+                IF (II .EQ. segmat%num_rows) THEN
                    segment_end(eptr) = II
                    eptr = eptr + 1
                 ELSE IF (dmat(II+1,JJ) .EQ. 0) THEN
@@ -191,12 +191,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     DO II = 1, nnz
-       csrmat%segment_len(II) = segment_end(II) - csrmat%segment_index(II) + 1
+       segmat%segment_len(II) = segment_end(II) - segmat%segment_index(II) + 1
     END DO
 
     !! Allocate Values
-    ALLOCATE(csrmat%values(SUM(csrmat%segment_len)))
-    csrmat%values = 1
+    ALLOCATE(segmat%values(SUM(segmat%segment_len)))
+    segmat%values = 1
 
     !! Cleanup
     DEALLOCATE(segment_end)

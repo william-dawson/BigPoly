@@ -99,7 +99,41 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & segmat%num_rows, segmat%num_columns)
 
     !! Now convert the csr_mat to a segmented matrix
-
+    CALL CSRToSeg(csr_mat, segmat)
   END SUBROUTINE NTPolyToSeg
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a matrix in the compressed sparse row format to a segment
+  !! matrix.
+  SUBROUTINE CSRToSeg(csrmat, segmat)
+    !> Local CSR Matrix to convert.
+    TYPE(Matrix_lsr) :: csrmat
+    !> The converted matrix.
+    TYPE(SegMat_t), INTENT(INOUT) :: segmat
+    INTEGER II, JJ, iptr
+
+    segmat = SegMat_t(csrmat%rows, csrmat%columns)
+
+    !! Count the outer index.
+    iptr = 1
+    ALLOCATE(segmat%outer_index(segmat%num_columns+1))
+    segmat%outer_index = 0
+    segmat%outer_index(1) = 1
+    DO II = 1, segmat%num_columns
+       DO JJ = csrmat%outer_index(II), csrmat%outer_index(II+1)
+          IF (JJ .EQ. 1) THEN
+             segmat%outer_index(JJ) = segmat%outer_index(JJ) + 1
+          ELSE IF (csrmat%inner_index(iptr-1) .NE. &
+               csrmat%inner_index(iptr)) THEN
+             segmat%outer_index(JJ) = segmat%outer_index(JJ) + 1
+          END IF
+          iptr = iptr + 1
+       END DO
+    END DO
+
+    !! Compute the length of the segments.
+
+    !! Copy the data.
+
+  END SUBROUTINE CSRToSeg
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ConversionModule
