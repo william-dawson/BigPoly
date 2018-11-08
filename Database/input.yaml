@@ -1,45 +1,21 @@
-convert_matrix_format:
-  help: |
-    Convert between different matrix formats.
-  args:
-    matrix_format:
-      shorthelp: format of the sparse matrices.
-      default: serial_text
-    infile:
-      shorthelp: matrix to convert from.
-      default: infile.dat
-    outfile:
-      shorthelp: matrix to convert to.
-      default: outfile.dat
-matrixpower:
-  help: |
-    Compute the powers of a matrix.
-  args:
-    matrix_format:
-      shorthelp: format of the sparse matrices.
-      default: serial_text
-    inmatrix_file:
-      shorthelp: matrix A
-      default: inmatrix.bin
-    outmatrix_file:
-      shorthelp: inmatrix^(power)
-      default: outmatrix.bin
-    power:
-      shorthelp: which power to raise the matrix to.
-      default: 1
-multiply_matrices:
-  help: |
-    Multiply two matrices.
-  args:
-    amatrix_file:
-      shorthelp: matrix A
-      default: amatrix.bin
-    bmatrix_file:
-      shorthelp: matrix B
-      default: bmatrix.bin
-    cmatrix_file:
-      shorthelp: matrix C
-      default: cmatrix.bin
-    matrix_format:
-      shorthelp: format of the sparse matrices.
-      default: serial_text
+action:
+  shorthelp: what calculation to perform.
+  default: matrix_inverse
+matrix_format:
+  shorthelp: format of the sparse matrices.
+  default: serial_text
+infile:
+  shorthelp: first input file.
+  default: infile.dat
+infile2:
+  shorthelp: second input file.
+  default: infile2.dat
+outfile:
+  shorthelp: result is stored here.
+  default: outfile.dat
+threshold:
+  shorthelp: for flushing small values to zero.
+  default: 1e-6
+convergence_threshold:
+  shorthelp: a convergence criteria for stopping iterations.
+  default: 1e-4

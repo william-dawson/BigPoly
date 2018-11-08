@@ -19,7 +19,8 @@ MODULE ConversionModule
        & TestReduceSizeRequest, TestReduceDataRequest, TestReduceInnerRequest
   USE PSMatrixModule, ONLY : Matrix_ps, GetMatrixTripletList, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, GetMatrixBlock, &
-       & MergeMatrixLocalBlocks, WriteMatrixToMatrixMarket
+       & MergeMatrixLocalBlocks, WriteMatrixToMatrixMarket, &
+       & DestructMatrix
   USE SMatrixModule, ONLY : Matrix_lsr, ConstructMatrixFromTripletList, &
        & DestructMatrix, TransposeMatrix
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
@@ -31,41 +32,60 @@ MODULE ConversionModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConvertDriver
   PUBLIC :: ChessToNTPoly
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ChessToNTPoly
+     MODULE PROCEDURE :: ChessToNTPoly_mat
+     MODULE PROCEDURE :: ChessToNTPoly_file
+  END INTERFACE
   ! PUBLIC :: NTPolyToChess
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConvertDriver(options)
     !> The dictionary specifying the parameters of the calculation.
     TYPE(dictionary), INTENT(IN), POINTER :: options
+    !! The output matrix
+    TYPE(Matrix_ps) :: ntmat
+
+    !! Convert CheSS To NTPoly
+    CALL ChessToNTPoly(dict_value(options//'matrix_format'), &
+         & dict_value(options//'infile'), ntmat)
+
+    !! Write To File
+    CALL WriteMatrixToMatrixMarket(ntmat, dict_value(options//'outfile'))
+    CALL DestructMatrix(ntmat)
+
+  END SUBROUTINE ConvertDriver
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ChessToNTPoly_file(infile, matrix_format, ntpolymat)
+    !> The file to read in
+    CHARACTER(LEN=*), INTENT(IN) :: infile
+    !> The format of that file
+    CHARACTER(LEN=*), INTENT(IN) :: matrix_format
+    !> The output matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: ntpolymat
     !! Local CheSS Matrices
     TYPE(sparse_matrix), DIMENSION(1) :: smat
     TYPE(matrices) :: dmat
-    !! NTPoly Matrices
-    TYPE(Matrix_ps) :: ntmat
 
     !! Read in the CheSS Matrix
     CALL sparse_matrix_and_matrices_init_from_file_bigdft(&
-         & dict_value(options//'matrix_format'), &
-         & dict_value(options//'infile'), &
-         & global_grid%global_rank, global_grid%total_processors, &
-         & global_grid%global_comm, smat(1), dmat, init_matmul=.FALSE.)
+         & infile, matrix_format, global_grid%global_rank, &
+         & global_grid%total_processors, global_grid%global_comm, &
+         & smat(1), dmat, init_matmul=.FALSE.)
     CALL init_matrix_taskgroups_wrapper(global_grid%global_rank, &
          & global_grid%total_processors, global_grid%global_comm, &
          & .TRUE., 1, smat)
     CALL resize_matrix_to_taskgroup(smat(1), dmat)
 
     !! Convert CheSS To NTPoly
-    CALL ChessToNTPoly(smat(1), dmat, ntmat)
-
-    !! Write To File
-    CALL WriteMatrixToMatrixMarket(ntmat, dict_value(options//'outfile'))
+    CALL ChessToNTPoly(smat(1), dmat, ntpolymat)
 
     !! Cleanup
     CALL deallocate_sparse_matrix(smat(1))
     CALL deallocate_matrices(dmat)
-  END SUBROUTINE ConvertDriver
+  END SUBROUTINE ChessToNTPoly_file
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a CheSS matrix type to NTPoly type
-  SUBROUTINE ChessToNTPoly(chess_mat, chess_val, ntpolymat)
+  SUBROUTINE ChessToNTPoly_mat(chess_mat, chess_val, ntpolymat)
     !> Input CheSS sparse matrix type
     TYPE(sparse_matrix), INTENT(IN):: chess_mat
     !> Input CheSS matrix of data.
@@ -101,7 +121,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           EXIT
        END IF
        !! This check is because chess's CSR datastructure doesn't have the
-       !! extract column index showing the total length.
+       !! extra column index showing the total length.
        IF (II .EQ. chess_mat%nfvctr) THEN
           inner_end = chess_mat%nvctr
        ELSE
@@ -129,7 +149,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     CALL DestructTripletList(triplet_list)
 
-  END SUBROUTINE ChessToNTPoly
+  END SUBROUTINE ChessToNTPoly_mat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert an NTPoly matrix to segmat_t.
   !! Note that here I am assuming that the segmat is distributed along columns
