@@ -1,4 +1,4 @@
-# Fake CheSS Conversion
+# CheSS Conversion
 
 In this program, I demonstrate how one might convert back and forth between
 the CheSS segmented CSR matrix format to NTPoly.
@@ -11,13 +11,6 @@ Go into the Build folder and type:
 > cmake .. -DCMAKE_PREFIX_PATH="/path/to/ntpoly/install;/path/to/bigdft/install"
 
 Note the semicolon between paths.
-
-## Fake CheSS Approach
-
-In this first version, we will use a fake version of the CheSS library. Like the
-real deal, the `FakeChesModule` implements a segmented csr matrix. After this
-program's first version is completed, we can hopefully drop the real CheSS in and
-use the same logic.
 
 ## Data Distribution Differences
 

@@ -1,5 +1,10 @@
 ################################################################################
-set(sources main.f90 ConversionModule.f90)
+set(sources
+    main.f90
+    ConversionModule.f90
+    MatrixPowerModule.f90
+    MultiplyMatricesModule.f90
+)
 
 ################################################################################
 ## Fortran Version

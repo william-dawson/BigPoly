@@ -3,36 +3,25 @@
 !! csr matrix into the NTPoly format, and back again.
 PROGRAM ConversionExample
   !! Local Modules
-  USE ConversionModule, ONLY : ChessToNTPoly, NTPolyToChess
-  USE MPI
+  USE ConversionModule, ONLY : ConvertDriver
+  USE MatrixPowerModule, ONLY : PowerDriver
+  USE MultiplyMatricesModule, ONLY : MultiplyDriver
   !! NTPoly Modules
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
-  USE PSMatrixModule, ONLY : Matrix_ps, CopyMatrix
   !! BigDFT Modules
-  USE dictionaries, ONLY : dictionary, dict_free
+  USE dictionaries
   USE futile
-  USE sparsematrix_highlevel, ONLY: sparse_matrix_metadata_init_from_file, &
-       & sparse_matrix_and_matrices_init_from_file_bigdft
-  USE sparsematrix_init, ONLY : init_matrix_taskgroups_wrapper
-  USE sparsematrix_io, ONLY : write_sparse_matrix
-  USE sparsematrix_memory, ONLY : deallocate_sparse_matrix_metadata, &
-       & deallocate_matrices, deallocate_sparse_matrix
-  USE sparsematrix_types, ONLY : sparse_matrix_metadata, matrices, sparse_matrix
+  USE yaml_output, ONLY : yaml_dict_dump_all
   USE yaml_parse, ONLY : yaml_cl_parse, yaml_cl_parse_null, &
-       & yaml_cl_parse_cmd_line, yaml_cl_parse_free, yaml_cl_parse_option
+       & yaml_parse_from_file, yaml_parse_from_string
+  !! ETC
+  USE MPI
   IMPLICIT NONE
   !! Calculation Parameters
-  CHARACTER(LEN=1024) :: metadata_file
-  CHARACTER(LEN=1024) :: fock_file, kernel_file
-  CHARACTER(LEN=1024) :: matrix_format
   INTEGER :: num_procs, my_rank
   INTEGER :: ierr, provided
-  !! CheSS Matrices
-  TYPE(sparse_matrix_metadata) :: metadata
-  TYPE(sparse_matrix), DIMENSION(2) :: smat
-  TYPE(matrices) :: fmat, dmat
-  !! NTPoly Matrices
-  TYPE(Matrix_ps) :: nt_fock, nt_density
+  TYPE(dictionary), POINTER :: action
+  TYPE(dictionary), POINTER :: options
 
   !! Init
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
@@ -40,74 +29,58 @@ PROGRAM ConversionExample
   CALL f_lib_initialize()
   CALL InitParams
 
-  !! Setup the CheSS matrices.
-  CALL sparse_matrix_metadata_init_from_file(TRIM(metadata_file), metadata)
-  CALL sparse_matrix_and_matrices_init_from_file_bigdft(matrix_format, &
-       & TRIM(fock_file), my_rank, num_procs, MPI_COMM_WORLD, smat(1), &
-       & fmat, init_matmul=.FALSE.)
-  CALL init_matrix_taskgroups_wrapper(my_rank, num_procs, MPI_COMM_WORLD, &
-       & .TRUE., 1, smat)
-
-  !! Convert CheSS To NTPoly
-  CALL ChessToNTPoly(smat(1), fmat, nt_fock)
-
-  !! Replace this Copy with whatever solver operation you wish to perform.
-  CALL CopyMatrix(nt_fock, nt_density)
-
-  !! Now convert back and print.
-  CALL NTPolyToChess(nt_density, smat(2), dmat)
-
-  !! And write to file.
-  CALL write_sparse_matrix(TRIM(matrix_format), my_rank, num_procs, &
-       & MPI_COMM_WORLD, smat(2), dmat, TRIM(kernel_file))
+  !! Call A Routine based on the Action Given
+  SELECT CASE(TRIM(dict_value(action//'action')))
+  CASE("matrixpower")
+     ! CALL PowerDriver(options)
+  CASE("multiply_matrices")
+     CALL MultiplyDriver(options)
+  CASE("convert_matrix_format")
+     CALL ConvertDriver(options)
+  END SELECT
 
   !! Cleanup
-  CALL deallocate_sparse_matrix(smat(1))
-  CALL deallocate_sparse_matrix(smat(2))
-  CALL deallocate_matrices(fmat)
-  CALL deallocate_matrices(dmat)
-  CALL deallocate_sparse_matrix_metadata(metadata)
   CALL CleanupParallel
-
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Read in the input parameters
   SUBROUTINE InitParams()
     !! Local data
     TYPE(yaml_cl_parse) :: parser
-    TYPE(dictionary), POINTER :: options
+    TYPE(dictionary), POINTER :: spec
+    TYPE(dictionary), POINTER :: args
+    !! The input parameters
+    CHARACTER(LEN=*), PARAMETER :: fname = &
+         & "/Users/dawson/Desktop/ConversionPoly/Build/Database/input.yaml"
+    !! Temporary Variables
+    TYPE(dictionary), POINTER :: dtmp, it
 
-    !! Setup the parser
+    !! Setup the initial spec from file.
+    CALL yaml_parse_from_file(dtmp, fname)
+    spec => dtmp .pop. 0
+    CALL dict_free(dtmp)
+
+    !! The first input option is what action to take.
     parser=yaml_cl_parse_null()
-    CALL yaml_cl_parse_option(parser, 'fock_file', 'hamiltonian_sparse.txt', &
-         & 'Name of the fock matrix file')
-    CALL yaml_cl_parse_option(parser, 'kernel_file', 'density_sparse.txt', &
-         & 'Name of the density kernel file')
-    CALL yaml_cl_parse_option(parser, 'metadata_file', &
-         & 'sparsematrix_metadata.dat', &
-         & 'The meta data associated with this matrix.')
-    CALL yaml_cl_parse_option(parser, 'matrix_format', 'serial_text', &
-         & 'Indicates the matrix format.')
+    it => dict_iter(spec)
+    CALL yaml_cl_parse_option(parser, "action", TRIM(dict_key(it)), &
+         'What action to take')
+    CALL yaml_cl_parse_cmd_line(parser,args=action)
+    CALL yaml_cl_parse_free(parser)
+    CALL yaml_map('Parsed action',action)
+
+    !! Next we parse the options associated with that action.
+    parser=yaml_cl_parse_null()
+    args => (spec//dict_value(action//'action'))//'args'
+    it => dict_iter(args)
+    DO WHILE(ASSOCIATED(it))
+       CALL yaml_cl_parse_option(parser, TRIM(dict_key(it)), &
+            & TRIM(dict_value(it//'default')), &
+            & TRIM(dict_value(it//'shorthelp')))
+       it => dict_next(it)
+    END DO
     CALL yaml_cl_parse_cmd_line(parser,args=options)
     CALL yaml_cl_parse_free(parser)
-
-    !! Extract
-    fock_file = options//"fock_file"
-    kernel_file = options//"kernel_file"
-    metadata_file = options//"metadata_file"
-    matrix_format = options//"matrix_format"
-
-    !! Punch out
-    IF (my_rank .EQ. 0) THEN
-       CALL yaml_mapping_open('Input parameters')
-       CALL yaml_map('Fock file',TRIM(fock_file))
-       CALL yaml_map('Kernel file',TRIM(kernel_file))
-       CALL yaml_map('Metadata file',TRIM(metadata_file))
-       CALL yaml_map('Matrix format',TRIM(matrix_format))
-       CALL yaml_mapping_close()
-    END IF
-
-    !! Cleanup
-    CALL dict_free(options)
+    CALL yaml_map('Parsed options',options)
   END SUBROUTINE InitParams
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup MPI/NTPoly

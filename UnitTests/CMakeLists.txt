@@ -9,18 +9,18 @@ else()
 endif()
 
 ################################################################################
-set(testargs "
-  --fock_file
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/hamiltonian_sparse.txt
-  --metadata
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/sparsematrix_metadata.dat")
+#set(testargs
+#   "--inmatrix_file=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/hamiltonian_sparse.txt
+#    --outmatrix_file=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/UnitTests/sparsematrix_metadata.dat"
+#    --power=2)
+#set(testargs "--action=matrixpower")
 
 add_test(Test1 mpirun -np 1 ${oversubscribe}
-         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert)
+         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${testargs})
 add_test(Test2 mpirun -np 2 ${oversubscribe}
-         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert)
+         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${testargs})
 add_test(Test4 mpirun -np 4 ${oversubscribe}
-         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert)
+         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${testargs})
 
 ################################################################################
 configure_file(hamiltonian_sparse.txt hamiltonian_sparse.txt COPYONLY)

@@ -22,6 +22,7 @@ find_package(OpenMP)
 find_package(BLAS)
 
 ################################################################################
+subdirs(Database)
 subdirs(Source)
 subdirs(UnitTests)
 
