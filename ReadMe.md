@@ -1,9 +1,7 @@
-# CheSS Conversion
+# BigPoly
 
-In this program, I demonstrate how one might convert back and forth between
-the CheSS segmented CSR matrix format to NTPoly.
-
-(THIS PROJECT STILL ISN'T DONE!)
+In this program, I provide some utilities that demonstrate the interoperability
+of BigDFT and NTPoly.
 
 ## How To Compile
 Go into the Build folder and type:
@@ -12,17 +10,9 @@ Go into the Build folder and type:
 
 Note the semicolon between paths.
 
-## Data Distribution Differences
+## How To Run
 
-I make the following assumptions about how CheSS data structures are distributed
-in BigDFT. First, the Hamiltonian is copied across all processes. Second, the
-density matrix is distributed evenly by columns.
+This program generates a single executable called `BigPoly`. To see a list
+of input options, type:
 
-It is not important to know how NTPoly distributes its data. Instead, each process
-can ask an NTPoly matrix for its starting rows and columns. We can then extract
-the necessary elements from the CheSS data structure, put them in a triplet list,
-and call `FillMatrixFromTripletList`.
-
-On the way back, we get the local data elements
-
-## Redistribution Strategy
+> /path/to/BigPoly --help
