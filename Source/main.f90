@@ -7,6 +7,7 @@ PROGRAM ConversionExample
   USE ConversionModule, ONLY : ConvertDriver
   USE MatrixInverseModule, ONLY : InverseDriver
   USE MultiplyMatricesModule, ONLY : MultiplyDriver
+  USE SpillageModule, ONLY : SpillageDriver
   !! NTPoly Modules
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   !! BigDFT Modules
@@ -34,6 +35,8 @@ PROGRAM ConversionExample
      CALL MultiplyDriver(options)
   CASE("convert_matrix_format")
      CALL ConvertDriver(options)
+  CASE("compute_spillage")
+     CALL SpillageDriver(options)
   END SELECT
 
   !! Cleanup

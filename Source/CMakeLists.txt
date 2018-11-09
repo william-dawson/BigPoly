@@ -5,6 +5,7 @@ set(sources
     ConversionModule.f90
     MatrixInverseModule.f90
     MultiplyMatricesModule.f90
+    SpillageModule.f90
 )
 
 ################################################################################

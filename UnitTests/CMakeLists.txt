@@ -1,4 +1,3 @@
-
 ################################################################################
 execute_process(COMMAND ${MPIEXEC} --version
                 OUTPUT_VARIABLE mpiversion OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -40,7 +39,20 @@ add_test(Invert2 mpirun -np 2 ${oversubscribe}
 add_test(Invert3 mpirun -np 4 ${oversubscribe}
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${invertargs})
 
+set(spillageargs "--action=compute_spillage"
+   "--infile=${CMAKE_BINARY_DIR}/UnitTests/hamiltonian_sparse.txt"
+   "--infile2=${CMAKE_BINARY_DIR}/UnitTests/overlap_sparse.txt"
+   "--outfile=${CMAKE_BINARY_DIR}/UnitTests/output.txt"
+   "--outfile2=${CMAKE_BINARY_DIR}/UnitTests/output2.txt")
+add_test(Spillage1 mpirun -np 1 ${oversubscribe}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${spillageargs})
+add_test(Spillage2 mpirun -np 2 ${oversubscribe}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${spillageargs})
+add_test(Spillage4 mpirun -np 4 ${oversubscribe}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert ${spillageargs})
+
 #add_test(Help mpirun -np 1 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/convert --help)
 
 ################################################################################
 configure_file(hamiltonian_sparse.txt hamiltonian_sparse.txt COPYONLY)
+configure_file(overlap_sparse.txt overlap_sparse.txt COPYONLY)

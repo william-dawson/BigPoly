@@ -13,6 +13,9 @@ infile2:
 outfile:
   shorthelp: result is stored here.
   default: outfile.dat
+outfile2:
+  shorthelp: any secondary result is stored here.
+  default: outfile2.dat
 threshold:
   shorthelp: for flushing small values to zero.
   default: 1e-6

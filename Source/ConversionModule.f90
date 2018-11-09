@@ -151,81 +151,81 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ChessToNTPoly_mat
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Convert an NTPoly matrix to segmat_t.
-  !! Note that here I am assuming that the segmat is distributed along columns
-  !! so you pass in the starting and ending column column of each process.
-  ! SUBROUTINE NTPolyToChess(ntpolymat, chess_mat, chess_val)
-  !   !> The input matrix to convert.
-  !   TYPE(Matrix_ps), INTENT(INOUT) :: ntpolymat
-  !   !> Output sparse matrix.
-  !   TYPE(sparse_matrix), INTENT(INOUT):: chess_mat
-  !   !> Output matrix of values.
-  !   TYPE(matrices), INTENT(INOUT) :: chess_val
-  !   !! Temporary Variables
-  !   TYPE(Matrix_lsr) :: merged_local_data
-  !   TYPE(Matrix_lsr) :: merged_local_dataT
-  !   TYPE(Matrix_lsr) :: merged_columns
-  !   TYPE(Matrix_lsr) :: merged_columnsT
-  !   TYPE(Matrix_lsr) :: full_gathered
-  !   !! Helpers For Communication
-  !   TYPE(ReduceHelper_t) :: row_helper
-  !   TYPE(ReduceHelper_t) :: column_helper
-  !   !! Helpers for conversion
-  !   INTEGER :: iproc, nproc, comm, nfvctr, nvctr
-  !
-  !   !! We gather the NTPoly matrix so it is duplicated on each process.
-  !   !! This is exactly the same logic used in the print matrix routine (for
-  !   !! writing to the console). But I don't wrap it up because there should
-  !   !! be some opportunity for communication hiding here.
-  !   !! Merge all the local data
-  !   CALL MergeMatrixLocalBlocks(ntpolymat, merged_local_data)
-  !
-  !   !! Merge Columns
-  !   CALL TransposeMatrix(merged_local_data, merged_local_dataT)
-  !   CALL ReduceAndComposeMatrixSizes(merged_local_dataT, &
-  !        & ntpolymat%process_grid%column_comm, merged_columns, column_helper)
-  !   DO WHILE(.NOT. TestReduceSizeRequest(column_helper))
-  !   END DO
-  !   CALL ReduceAndComposeMatrixData(merged_local_dataT, &
-  !        & ntpolymat%process_grid%column_comm, merged_columns, &
-  !        & column_helper)
-  !   DO WHILE(.NOT. TestReduceInnerRequest(column_helper))
-  !   END DO
-  !   DO WHILE(.NOT. TestReduceDataRequest(column_helper))
-  !   END DO
-  !   CALL ReduceAndComposeMatrixCleanup(merged_local_dataT, merged_columns, &
-  !        & column_helper)
-  !
-  !   !! Merge Rows
-  !   CALL TransposeMatrix(merged_columns,merged_columnsT)
-  !   CALL ReduceAndComposeMatrixSizes(merged_columnsT, &
-  !        & ntpolymat%process_grid%row_comm, full_gathered, row_helper)
-  !   DO WHILE(.NOT. TestReduceSizeRequest(row_helper))
-  !   END DO
-  !   CALL ReduceAndComposeMatrixData(merged_columnsT, &
-  !        & ntpolymat%process_grid%row_comm, full_gathered, row_helper)
-  !   DO WHILE(.NOT. TestReduceInnerRequest(row_helper))
-  !   END DO
-  !   DO WHILE(.NOT. TestReduceDataRequest(row_helper))
-  !   END DO
-  !   CALL ReduceAndComposeMatrixCleanup(merged_columnsT, full_gathered, &
-  !         & row_helper)
-  !
-  !   !! Convert to CheSS
-  !   iproc = ntpolymat%process_grid%global_rank
-  !   nproc = ntpolymat%process_grid%total_processors
-  !   comm = ntpolymat%process_grid%global_comm
-  !   nfvctr = ntpolymat%actual_matrix_dimension
-  !   nvctr = SIZE(full_gathered%values)
-  !   CALL sparse_matrix_init_from_data_ccs(iproc, nproc, comm, nfvctr, nvctr, &
-  !         & full_gathered%inner_index, full_gathered%outer_index(:nfvctr) + 1, &
-  !         & chess_mat, .FALSE.)
-  !   call matrices_init_from_data(chess_mat, full_gathered%values, chess_val)
-  !
-  !   CALL DestructMatrix(merged_local_data)
-  !   CALL DestructMatrix(merged_local_dataT)
-  !   CALL DestructMatrix(merged_columns)
-  !   CALL DestructMatrix(merged_columnsT)
-  ! END SUBROUTINE NTPolyToChess
+  !> Convert an NTPoly matrix to CheSS.
+  ! Note that here I am assuming that the segmat is distributed along columns
+  ! so you pass in the starting and ending column column of each process.
+  SUBROUTINE NTPolyToChess(ntpolymat, chess_mat, chess_val)
+    !> The input matrix to convert.
+    TYPE(Matrix_ps), INTENT(INOUT) :: ntpolymat
+    !> Output sparse matrix.
+    TYPE(sparse_matrix), INTENT(INOUT):: chess_mat
+    !> Output matrix of values.
+    TYPE(matrices), INTENT(INOUT) :: chess_val
+    !! Temporary Variables
+    TYPE(Matrix_lsr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_dataT
+    TYPE(Matrix_lsr) :: merged_columns
+    TYPE(Matrix_lsr) :: merged_columnsT
+    TYPE(Matrix_lsr) :: full_gathered
+    !! Helpers For Communication
+    TYPE(ReduceHelper_t) :: row_helper
+    TYPE(ReduceHelper_t) :: column_helper
+    !! Helpers for conversion
+    INTEGER :: iproc, nproc, comm, nfvctr, nvctr
+
+    !! We gather the NTPoly matrix so it is duplicated on each process.
+    !! This is exactly the same logic used in the print matrix routine (for
+    !! writing to the console). But I don't wrap it up because there should
+    !! be some opportunity for communication hiding here.
+    !! Merge all the local data
+    CALL MergeMatrixLocalBlocks(ntpolymat, merged_local_data)
+
+    !! Merge Columns
+    CALL TransposeMatrix(merged_local_data, merged_local_dataT)
+    CALL ReduceAndComposeMatrixSizes(merged_local_dataT, &
+         & ntpolymat%process_grid%column_comm, merged_columns, column_helper)
+    DO WHILE(.NOT. TestReduceSizeRequest(column_helper))
+    END DO
+    CALL ReduceAndComposeMatrixData(merged_local_dataT, &
+         & ntpolymat%process_grid%column_comm, merged_columns, &
+         & column_helper)
+    DO WHILE(.NOT. TestReduceInnerRequest(column_helper))
+    END DO
+    DO WHILE(.NOT. TestReduceDataRequest(column_helper))
+    END DO
+    CALL ReduceAndComposeMatrixCleanup(merged_local_dataT, merged_columns, &
+         & column_helper)
+
+    !! Merge Rows
+    CALL TransposeMatrix(merged_columns,merged_columnsT)
+    CALL ReduceAndComposeMatrixSizes(merged_columnsT, &
+         & ntpolymat%process_grid%row_comm, full_gathered, row_helper)
+    DO WHILE(.NOT. TestReduceSizeRequest(row_helper))
+    END DO
+    CALL ReduceAndComposeMatrixData(merged_columnsT, &
+         & ntpolymat%process_grid%row_comm, full_gathered, row_helper)
+    DO WHILE(.NOT. TestReduceInnerRequest(row_helper))
+    END DO
+    DO WHILE(.NOT. TestReduceDataRequest(row_helper))
+    END DO
+    CALL ReduceAndComposeMatrixCleanup(merged_columnsT, full_gathered, &
+          & row_helper)
+
+    !! Convert to CheSS
+    iproc = ntpolymat%process_grid%global_rank
+    nproc = ntpolymat%process_grid%total_processors
+    comm = ntpolymat%process_grid%global_comm
+    nfvctr = ntpolymat%actual_matrix_dimension
+    nvctr = SIZE(full_gathered%values)
+    CALL sparse_matrix_init_from_data_ccs(iproc, nproc, comm, nfvctr, nvctr, &
+          & full_gathered%inner_index, full_gathered%outer_index(:nfvctr) + 1, &
+          & chess_mat, .FALSE.)
+    ! call matrices_init_from_data(chess_mat, full_gathered%values, chess_val)
+
+    CALL DestructMatrix(merged_local_data)
+    CALL DestructMatrix(merged_local_dataT)
+    CALL DestructMatrix(merged_columns)
+    CALL DestructMatrix(merged_columnsT)
+  END SUBROUTINE NTPolyToChess
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ConversionModule
