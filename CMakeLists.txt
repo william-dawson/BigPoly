@@ -6,14 +6,26 @@ enable_language(Fortran)
 enable_testing()
 
 ################################################################################
-## NTPoly, Futile, and Chess Dependencies
-find_library(NTPoly_LIBRARIES NTPoly)
-find_path(NTPoly_INCLUDE_PATH "psmatrixmodule.mod")
+## Futile and Chess Dependencies
 find_library(Futile_LIBRARIES futile-1)
 find_path(Futile_INCLUDE_PATH "dictionaries.mod")
 find_library(Yaml_LIBRARIES yaml)
 find_library(CheSS_LIBRARIES CheSS-1)
 find_path(CheSS_INCLUDE_PATH "sparsematrix.mod")
+
+################################################################################
+## NTPoly Dependency
+find_package(NTPoly QUIET)
+IF (NOT NTPOLY_LIB)
+  include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+  ExternalProject_Add(NTPoly
+    GIT_REPOSITORY    https://github.com/william-dawson/NTPoly.git
+    GIT_TAG           origin/CMake
+    CMAKE_ARGS        -DFORTRAN_ONLY=Yes
+  )
+  ExternalProject_Get_Property(NTPoly source_dir)
+  find_package(NTPoly HINTS ${source_dir})
+ENDIF()
 
 ################################################################################
 ## Output Locations

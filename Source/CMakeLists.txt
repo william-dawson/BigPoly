@@ -11,11 +11,11 @@ set(sources
 ################################################################################
 ## Build the executable
 add_executable(BigPoly ${sources})
-target_link_libraries(BigPoly ${NTPoly_LIBRARIES} ${Futile_LIBRARIES}
+target_link_libraries(BigPoly NTPoly::NTPoly ${Futile_LIBRARIES}
                       ${MPI_Fortran_LIBRARIES} ${OpenMP_Fortran_LIBRARIES}
                       ${BLAS_LIBRARIES} ${Yaml_LIBRARIES} ${CheSS_LIBRARIES}
                       Database)
 target_include_directories(BigPoly PUBLIC
-  ${NTPoly_INCLUDE_PATH} ${Futile_INCLUDE_PATH} ${MPI_INCLUDE_PATH}
+  NTPoly::NTPoly ${Futile_INCLUDE_PATH} ${MPI_INCLUDE_PATH}
   ${CheSS_INCLUDE_PATH})
 install(TARGETS BigPoly DESTINATION bin)
