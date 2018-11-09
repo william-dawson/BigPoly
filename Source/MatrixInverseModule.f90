@@ -12,8 +12,7 @@ MODULE MatrixInverseModule
   USE InverseSolversModule, ONLY : Invert
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, &
        & WriteMatrixToMatrixMarket
-  USE SolverParametersModule, ONLY : SolverParameters_t, &
-       & DestructSolverParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: InverseDriver
@@ -43,7 +42,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteMatrixToMatrixMarket(invmat, dict_value(options//'outfile'))
 
     !! Cleanup
-    CALL DestructSolverParameters(param)
     CALL DestructMatrix(mat)
     CALL DestructMatrix(invmat)
   END SUBROUTINE InverseDriver

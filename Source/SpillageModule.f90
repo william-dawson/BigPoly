@@ -13,8 +13,7 @@ MODULE SpillageModule
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, &
        & WriteMatrixToMatrixMarket
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply
-  USE SolverParametersModule, ONLY : SolverParameters_t, &
-       & DestructSolverParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SpillageDriver
