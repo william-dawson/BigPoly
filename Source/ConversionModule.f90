@@ -34,8 +34,8 @@ MODULE ConversionModule
   PUBLIC :: ChessToNTPoly
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ChessToNTPoly
-     MODULE PROCEDURE :: ChessToNTPoly_mat
-     MODULE PROCEDURE :: ChessToNTPoly_file
+     MODULE PROCEDURE ChessToNTPoly_mat
+     MODULE PROCEDURE ChessToNTPoly_file
   END INTERFACE
   ! PUBLIC :: NTPolyToChess
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

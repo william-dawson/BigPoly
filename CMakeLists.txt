@@ -20,7 +20,7 @@ IF (NOT NTPOLY_LIB)
   include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
   ExternalProject_Add(NTPolyDownload
     GIT_REPOSITORY https://github.com/william-dawson/NTPoly.git
-    GIT_TAG origin/CMake
+    GIT_TAG origin/master
     CMAKE_ARGS -DFORTRAN_ONLY=Yes -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}
   )
   set(NTPoly_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
