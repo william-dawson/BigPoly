@@ -8,7 +8,12 @@ Go into the Build folder and type:
 
 > cmake .. -DCMAKE_PREFIX_PATH="/path/to/ntpoly/install;/path/to/bigdft/install"
 
-Note the semicolon between paths.
+Note the semicolon between paths. You might want to pass extra compiler
+flags which can be done with the following variables:
+
+* -DCMAKE_Fortran_COMPILER : set the Fortran compiler.
+* -DF_TOOLCHAINFLAGS : sets the compiler flags.
+* -DTOOLCHAIN_LIBS : set the linker flags.
 
 ## How To Run
 

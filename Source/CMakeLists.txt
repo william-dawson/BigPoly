@@ -12,20 +12,11 @@ set(sources
 ## Build the executable
 add_executable(BigPoly ${sources})
 
-if (NTPOLY_LIB)
-  target_link_libraries(BigPoly NTPoly::NTPoly ${TOOLCHAIN_LIBS}
-                        ${BLAS_LIBRARIES} ${MPI_Fortran_LIBRARIES}
-                        ${OpenMP_Fortran_LIBRARIES} ${CheSS_LIBRARIES}
-                        ${Futile_LIBRARIES} ${Yaml_LIBRARIES} Database)
-  target_include_directories(BigPoly PUBLIC NTPoly::NTPoly
-      ${Futile_INCLUDE_PATH} ${MPI_INCLUDE_PATH} ${CheSS_INCLUDE_PATH})
-else()
-  target_link_libraries(BigPoly NTPoly ${TOOLCHAIN_LIBS} ${BLAS_LIBRARIES}
-                        ${MPI_Fortran_LIBRARIES} ${OpenMP_Fortran_LIBRARIES}
-                        ${CheSS_LIBRARIES} ${Futile_LIBRARIES} ${Yaml_LIBRARIES}
-                        Database)
-  target_include_directories(BigPoly PUBLIC
+target_link_libraries(BigPoly ${NTPOLY_LIBRARIES} ${TOOLCHAIN_LIBS}
+                      ${BLAS_LIBRARIES} ${MPI_Fortran_LIBRARIES}
+                      ${OpenMP_Fortran_LIBRARIES} ${CheSS_LIBRARIES}
+                      ${Futile_LIBRARIES} ${Yaml_LIBRARIES} Database)
+target_include_directories(BigPoly PUBLIC ${NTPOLY_INCLUDE_PATH}
     ${Futile_INCLUDE_PATH} ${MPI_INCLUDE_PATH} ${CheSS_INCLUDE_PATH})
-endif()
 
 install(TARGETS BigPoly DESTINATION bin)

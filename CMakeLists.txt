@@ -15,19 +15,9 @@ find_path(CheSS_INCLUDE_PATH "sparsematrix.mod")
 
 ################################################################################
 ## NTPoly Dependency
-find_package(NTPoly QUIET)
-IF (NOT NTPOLY_LIB)
-  include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
-  ExternalProject_Add(NTPolyDownload
-    GIT_REPOSITORY https://github.com/william-dawson/NTPoly.git
-    GIT_TAG origin/master
-    CMAKE_ARGS -DFORTRAN_ONLY=Yes -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set(NTPoly_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  add_library(NTPoly SHARED IMPORTED)
-  set_target_properties(NTPoly PROPERTIES IMPORTED_LOCATION
-    ${NTPoly_LIB_DIR}/libNTPoly.a)
-ENDIF()
+find_library(NTPOLY_LIBRARIES NTPoly)
+find_path(NTPOLY_INCLUDE_PATH "psmatrixmodule.mod")
+MESSAGE(${NTPOLY_LIBRARIES})
 
 ################################################################################
 ## Output Locations
