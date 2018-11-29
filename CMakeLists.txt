@@ -17,7 +17,6 @@ find_path(CheSS_INCLUDE_PATH "sparsematrix.mod")
 ## NTPoly Dependency
 find_library(NTPOLY_LIBRARIES NTPoly)
 find_path(NTPOLY_INCLUDE_PATH "psmatrixmodule.mod")
-MESSAGE(${NTPOLY_LIBRARIES})
 
 ################################################################################
 ## Output Locations
@@ -32,6 +31,9 @@ install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/ DESTINATION include)
 find_package(MPI REQUIRED)
 find_package(OpenMP)
 find_package(BLAS)
+if (NOT ${BLAS_FOUND})
+  set(${BLAS_LIBRARIES} "")
+endif()
 
 ################################################################################
 subdirs(Database)
