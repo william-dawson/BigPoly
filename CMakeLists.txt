@@ -29,6 +29,7 @@ IF (NOT NTPOLY_LIB)
     ${NTPoly_LIB_DIR}/libNTPoly.a)
 ENDIF()
 
+
 ################################################################################
 ## Output Locations
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
