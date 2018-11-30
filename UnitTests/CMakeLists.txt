@@ -10,7 +10,8 @@ endif()
 ################################################################################
 set(convertargs "--action=convert_matrix_format"
     "--infile=${CMAKE_BINARY_DIR}/UnitTests/hamiltonian_sparse.txt"
-    "--outfile=${CMAKE_BINARY_DIR}/UnitTests/output.txt")
+    "--outfile=${CMAKE_BINARY_DIR}/UnitTests/output.txt"
+    "--logfile=${CMAKE_BINARY_DIR}/UnitTests/log.yaml")
 add_test(Convert1 mpirun -np 1 ${oversubscribe}
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/BigPoly ${convertargs})
 add_test(Convert2 mpirun -np 2 ${oversubscribe}

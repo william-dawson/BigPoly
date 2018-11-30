@@ -18,6 +18,7 @@ PROGRAM ConversionExample
   IMPLICIT NONE
   !! Calculation Parameters
   INTEGER :: num_procs, my_rank
+  INTEGER :: iunit
   INTEGER :: ierr, provided
   TYPE(dictionary), POINTER :: options
 
@@ -26,6 +27,16 @@ PROGRAM ConversionExample
   CALL InitParallel
   CALL f_lib_initialize()
   CALL GetArgs(options, my_rank)
+
+  !! A log file to write to
+  IF (my_rank .EQ. 0) THEN
+     IF (TRIM(dict_value(options//'logfile')) .NE. "") THEN
+        CALL yaml_set_stream(filename=TRIM(TRIM(dict_value(options//'logfile'))))
+     END IF
+     CALL yaml_get_default_stream(iunit)
+     CALL yaml_new_document(iunit)
+     CALL yaml_map('Parsed options',options)
+  END IF
 
   !! Call A Routine based on the Action Given
   SELECT CASE(TRIM(dict_value(options//'action')))
@@ -40,6 +51,9 @@ PROGRAM ConversionExample
   END SELECT
 
   !! Cleanup
+  IF (my_rank .EQ. 0) THEN
+     CALL yaml_release_document(iunit)
+  END IF
   CALL dict_free(options)
   CALL CleanupParallel
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

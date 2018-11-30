@@ -22,3 +22,6 @@ threshold:
 convergence_threshold:
   shorthelp: a convergence criteria for stopping iterations.
   default: 1e-4
+logfile:
+  shorthelp: name of the log file to print logging info to.
+  default: log.yaml

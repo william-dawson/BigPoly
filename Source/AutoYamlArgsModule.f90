@@ -39,8 +39,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL yaml_cl_parse_cmd_line(parser,args=options)
     CALL yaml_cl_parse_free(parser)
-    IF (iproc .EQ. 0) THEN
-       CALL yaml_map('Parsed options',options)
-    END IF
   END SUBROUTINE GetArgs
 END MODULE AutoYamlArgsModule
