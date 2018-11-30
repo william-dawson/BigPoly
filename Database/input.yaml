@@ -24,4 +24,4 @@ convergence_threshold:
   default: 1e-4
 logfile:
   shorthelp: name of the log file to print logging info to.
-  default: log.yaml
+  default: ''
