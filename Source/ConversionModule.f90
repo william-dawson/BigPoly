@@ -50,8 +50,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & dict_value(options//'infile'), ntmat)
 
     !! Write To File
-    CALL WriteMatrixToMatrixMarket(ntmat, dict_value(options//'outfile'))
-    CALL DestructMatrix(ntmat)
+    ! CALL WriteMatrixToMatrixMarket(ntmat, dict_value(options//'outfile'))
+    ! CALL DestructMatrix(ntmat)
 
   END SUBROUTINE ConvertDriver
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -73,7 +73,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & smat(1), dmat, init_matmul=.FALSE.)
     CALL init_matrix_taskgroups_wrapper(global_grid%global_rank, &
          & global_grid%total_processors, global_grid%global_comm, &
-         & .TRUE., 1, smat)
+         & .FALSE., 1, smat)
     CALL resize_matrix_to_taskgroup(smat(1), dmat)
 
     !! Convert CheSS To NTPoly
