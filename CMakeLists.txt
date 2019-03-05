@@ -12,6 +12,8 @@ find_path(Futile_INCLUDE_PATH "dictionaries.mod")
 find_library(Yaml_LIBRARIES yaml)
 find_library(CheSS_LIBRARIES CheSS-1)
 find_path(CheSS_INCLUDE_PATH "sparsematrix.mod")
+find_library(Atlab_LIBRARIES Atlab-1)
+find_path(Atlab_INCLUDE_PATH "numerics.mod")
 
 ################################################################################
 ## NTPoly Dependency
