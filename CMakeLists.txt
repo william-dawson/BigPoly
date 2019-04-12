@@ -1,24 +1,22 @@
 ################################################################################
 ## Basic Setup
 cmake_minimum_required (VERSION 3.2)
-project("Conversion Poly")
+project("BigPoly")
 enable_language(Fortran)
 enable_testing()
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Cmake)
+
 ################################################################################
 ## Futile and Chess Dependencies
-find_library(Futile_LIBRARIES futile-1)
-find_path(Futile_INCLUDE_PATH "dictionaries.mod")
-find_library(Yaml_LIBRARIES yaml)
-find_library(CheSS_LIBRARIES CheSS-1)
-find_path(CheSS_INCLUDE_PATH "sparsematrix.mod")
-find_library(Atlab_LIBRARIES atlab-1)
-find_path(Atlab_INCLUDE_PATH "numerics.mod")
+find_package(Futile REQUIRED)
+find_package(CheSS REQUIRED)
+find_package(Atlab REQUIRED)
+find_package(YAML REQUIRED)
 
 ################################################################################
 ## NTPoly Dependency
-find_library(NTPOLY_LIBRARIES NTPoly)
-find_path(NTPOLY_INCLUDE_PATH "psmatrixmodule.mod")
+find_package(NTPoly REQUIRED)
 
 ################################################################################
 ## Output Locations
