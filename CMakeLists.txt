@@ -32,7 +32,7 @@ find_package(MPI REQUIRED)
 find_package(OpenMP)
 find_package(BLAS)
 if (NOT ${BLAS_FOUND})
-  set(${BLAS_LIBRARIES} "")
+  set(BLAS_LIBRARIES "")
 endif()
 
 ################################################################################
