@@ -5,7 +5,7 @@
 # - Atlab_INCLUDE_DIRS - the path to Atlab.
 
 # First we search for the libraries
-find_library(Atlab_LIBRARIES Atlab-1)
+find_library(Atlab_LIBRARIES atlab-1)
 find_path(Atlab_INCLUDE_DIRS "numerics.mod")
 
 # Now check if that worked
