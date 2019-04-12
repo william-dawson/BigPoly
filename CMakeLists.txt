@@ -1,7 +1,7 @@
 ################################################################################
 ## Basic Setup
 cmake_minimum_required (VERSION 3.2)
-project("Conversion Poly")
+project("BigPoly")
 enable_language(Fortran)
 enable_testing()
 
